@@ -18,6 +18,9 @@ public class Producto {
     @Column(name = "id_producto")
     private Long idProducto;
 
+
+    //cambios minmso
+
     @NotNull(message = "El nombre del producto no puede estar vacio")
     @Column(nullable = false,unique = true)
     private String nombreProducto;
