@@ -20,8 +20,7 @@ import java.util.List;
 public class BoletaController {
 
     private final BoletaService boletaService;
-//cinebtario
-    // POST: Crear nueva boleta
+//cinebtari    // POST: Crear nueva boleta
     @PostMapping
     public ResponseEntity<BoletaResponseDTO> crearBoleta(@Valid @RequestBody BoletaDTO boletaDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(boletaService.crearBoleta(boletaDTO));
