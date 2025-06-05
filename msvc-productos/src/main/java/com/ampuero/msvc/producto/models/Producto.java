@@ -17,6 +17,7 @@ public class Producto {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_producto")
     private Long idProducto;
+    //comentario
 
     @NotNull(message = "El nombre del producto no puede estar vacio")
     @Column(nullable = false,unique = true)
