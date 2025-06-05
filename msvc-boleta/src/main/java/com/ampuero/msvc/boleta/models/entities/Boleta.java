@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.util.Date;
 
+//ola que hace
 @Entity
 @Table(name = "boletas")
 @Data
