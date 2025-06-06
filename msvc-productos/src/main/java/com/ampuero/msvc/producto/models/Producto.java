@@ -29,5 +29,4 @@ public class Producto {
     @PositiveOrZero(message = "El precio debe ser positivo o cero")
     @Column
     private Double precioProducto;
-
 }

@@ -32,8 +32,8 @@ public class BoletaController {
         return ResponseEntity.status(HttpStatus.OK).body(boletaService.obtenerTodas());
     }
 
-    // GET: Obtener boletas por ID de cliente
-    @GetMapping("/cliente/{idCliente}")
+    // GET: Obtener boletas por ID de clientes
+    @GetMapping("/clientes/{idCliente}")
     public ResponseEntity<List<BoletaResponseDTO>> obtenerPorCliente(@PathVariable Long idCliente) {
         return ResponseEntity.status(HttpStatus.OK).body(boletaService.obtenerPorCliente(idCliente));
     }

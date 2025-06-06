@@ -15,7 +15,7 @@ public class BoletaDTO {
     @NotBlank(message = "La descripción no puede estar vacía")
     private String descripcionBoleta;
 
-    @NotNull(message = "El ID del cliente es obligatorio")
+    @NotNull(message = "El ID del clientes es obligatorio")
     private Long idClientePojo;
 }
 

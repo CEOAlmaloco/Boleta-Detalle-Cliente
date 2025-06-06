@@ -19,7 +19,7 @@ public class ClienteController {
     @Autowired
     public ClienteService clienteService;
 
-    // POST: Crear nuevo cliente
+    // POST: Crear nuevo clientes
     @PostMapping
     public ResponseEntity<Cliente> crearCliente(@Valid @RequestBody ClienteCreationDTO clienteCreationDTO){
         return ResponseEntity
@@ -35,7 +35,7 @@ public class ClienteController {
                 .body(clienteService.traerTodos());
     }
 
-    // GET: Traer cliente por ID
+    // GET: Traer clientes por ID
     @GetMapping("/{id}")
     public ResponseEntity<Cliente> traerCliente(@PathVariable Long id){
         return ResponseEntity
@@ -43,14 +43,14 @@ public class ClienteController {
                 .body(clienteService.traerPorId(id));
     }
 
-    // PUT: Actualizar cliente por ID
+    // PUT: Actualizar clientes por ID
     @PutMapping("/{id}")
     public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @Valid @RequestBody Cliente cliente){
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(clienteService.actualizarCliente(id, cliente));
     }
-    // DELETE: Eliminar cliente por ID
+    // DELETE: Eliminar clientes por ID
     @DeleteMapping("/{id}")
     public ResponseEntity<Cliente> eliminarCliente(@PathVariable Long id){
         clienteService.eliminarCliente(id);

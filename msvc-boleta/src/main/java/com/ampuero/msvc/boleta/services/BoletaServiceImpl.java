@@ -26,7 +26,7 @@ public class BoletaServiceImpl implements BoletaService {
     private final BoletaRepository boletaRepository;
     private final ClienteClientRest clienteClient;
 
-    // Metodo privado para obtener cliente o lanzar excepcion
+    // Metodo privado para obtener clientes o lanzar excepcion
     private ClienteResponseDTO obtenerClienteOExcepcion(Long idCliente) {
         try {
             ClienteResponseDTO cliente = clienteClient.findClienteById(idCliente);
@@ -36,7 +36,7 @@ public class BoletaServiceImpl implements BoletaService {
             }
             return cliente;
         } catch (FeignException e) {
-            log.error("Error Feign al obtener cliente ID {}: {}", idCliente, e.getMessage(), e);
+            log.error("Error Feign al obtener clientes ID {}: {}", idCliente, e.getMessage(), e);
             if (e.status() == 404) {
                 throw new ResourceNotFoundException("Cliente no encontrado con ID: " + idCliente, e);
             }
@@ -44,7 +44,7 @@ public class BoletaServiceImpl implements BoletaService {
         }
     }
 
-    // POST: Crear nueva boleta. Lanza excepcion si el cliente no existe.
+    // POST: Crear nueva boleta. Lanza excepcion si el clientes no existe.
     @Override
     public BoletaResponseDTO crearBoleta(BoletaDTO boletaDTO) {
         ClienteResponseDTO cliente = obtenerClienteOExcepcion(boletaDTO.getIdClientePojo());
@@ -52,7 +52,7 @@ public class BoletaServiceImpl implements BoletaService {
 
         Boleta boleta = new Boleta();
         boleta.setDescripcionBoleta(boletaDTO.getDescripcionBoleta());
-        boleta.setIdClientePojo(cliente.getIdUsuario()); // Usar el ID del cliente obtenido
+        boleta.setIdClientePojo(cliente.getIdUsuario()); // Usar el ID del clientes obtenido
         boleta.setTotalBoleta(0.0); // Total inicial en 0
 
         Boleta savedBoleta = boletaRepository.save(boleta);
@@ -60,7 +60,7 @@ public class BoletaServiceImpl implements BoletaService {
         return buildResponseDTO(savedBoleta, cliente);
     }
 
-    // GET: Obtener boleta por ID. Lanza excepcion si la boleta o el cliente asociado no existen.
+    // GET: Obtener boleta por ID. Lanza excepcion si la boleta o el clientes asociado no existen.
     @Override
     public BoletaResponseDTO obtenerBoletaPorId(Long id) {
         Boleta boleta = boletaRepository.findById(id)
@@ -70,7 +70,7 @@ public class BoletaServiceImpl implements BoletaService {
         return buildResponseDTO(boleta, cliente);
     }
 
-    // GET: Obtener todas las boletas Omite boletas si el cliente asociado no se encuentra.
+    // GET: Obtener todas las boletas Omite boletas si el clientes asociado no se encuentra.
     @Override
     public List<BoletaResponseDTO> obtenerTodas() {
         return boletaRepository.findAll().stream()
@@ -79,7 +79,7 @@ public class BoletaServiceImpl implements BoletaService {
                         ClienteResponseDTO cliente = obtenerClienteOExcepcion(boleta.getIdClientePojo()); // Cambio aqui, getIdClientePojo()
                         return buildResponseDTO(boleta, cliente);
                     } catch (ResourceNotFoundException | BoletaException e) {
-                        log.warn("No se pudo obtener el cliente ({}) para la boleta {}: {}. Se omitira la boleta.",
+                        log.warn("No se pudo obtener el clientes ({}) para la boleta {}: {}. Se omitira la boleta.",
                                  boleta.getIdClientePojo(), boleta.getIdBoleta(), e.getMessage());
                         return null; // grackiasgpt por lograr encontrar el error
                     }
@@ -98,14 +98,14 @@ public class BoletaServiceImpl implements BoletaService {
         log.info("Total de boleta ID {} actualizado con monto {}", idFactura, monto);
     }
 
-    // GET: Obtener boletas por ID de cliente. Lanza excepcion si el cliente no existe.
+    // GET: Obtener boletas por ID de clientes. Lanza excepcion si el clientes no existe.
     @Override
     public List<BoletaResponseDTO> obtenerPorCliente(Long idCliente) {
-        // Primero verificar que el cliente existe y obtener sus datos
+        // Primero verificar que el clientes existe y obtener sus datos
         ClienteResponseDTO cliente = obtenerClienteOExcepcion(idCliente);
 
         return boletaRepository.findByIdClientePojo(idCliente).stream()
-                .map(boleta -> buildResponseDTO(boleta, cliente)) // Reutiliza el cliente ya obtenido
+                .map(boleta -> buildResponseDTO(boleta, cliente)) // Reutiliza el clientes ya obtenido
                 .collect(Collectors.toList());
     }
 

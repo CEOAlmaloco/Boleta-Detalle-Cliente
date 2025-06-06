@@ -139,7 +139,7 @@ public class DetalleServiceImpl implements DetalleService {
         detalleRepository.delete(detalle);
     }
 
-    // Llama al cliente de boletas para actualizar el total
+    // Llama al clientes de boletas para actualizar el total
     private void actualizarTotalBoleta(Long idBoleta, double monto) {
         MontoUpdateRequestDTO montoDTO = new MontoUpdateRequestDTO(monto);
         boletaClient.actualizarTotalBoleta(idBoleta, montoDTO);
@@ -185,7 +185,7 @@ public class DetalleServiceImpl implements DetalleService {
     private BoletaPojo obtenerBoletaOExcepcion(Long idBoleta) throws ResourceNotFoundException {
         try {
             ResponseEntity<BoletaPojo> boletaResponse = boletaClient.getBoletaById(idBoleta);
-            // Verifica si la respuesta del cliente Feign es un error
+            // Verifica si la respuesta del clientes Feign es un error
             if (boletaResponse.getStatusCode().isError()) {
                 String errorMsg = "Error del servicio de boletas al obtener ID " + idBoleta +": " + boletaResponse.getStatusCode();
                 log.warn(errorMsg);
@@ -215,7 +215,7 @@ public class DetalleServiceImpl implements DetalleService {
     private ProductoPojo obtenerProductoOExcepcion(Long idProducto) throws ResourceNotFoundException {
         try {
             ResponseEntity<ProductoPojo> productoResponse = productoClient.getProductoById(idProducto);
-            // Verifica si la respuesta del cliente Feign es un error
+            // Verifica si la respuesta del clientes Feign es un error
             if (productoResponse.getStatusCode().isError()) {
                 String errorMsg = "Error del servicio de productos al obtener ID " + idProducto + ": " + productoResponse.getStatusCode();
                 log.warn(errorMsg);
