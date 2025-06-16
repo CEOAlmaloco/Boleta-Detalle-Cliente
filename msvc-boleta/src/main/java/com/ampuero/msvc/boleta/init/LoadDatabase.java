@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -29,14 +30,13 @@ public class LoadDatabase implements CommandLineRunner {
         Faker faker = new Faker(Locale.of("es","CL"));
 
         if(boletaRepository.count()==0){
-            for(int i=0;i<1000;i++){
+            for(int i=0;i<100;i++){
                 Boleta boleta = new Boleta();
 
-                boleta.setFechaEmisionBoleta(new Date(System.currentTimeMillis() -
-                        faker.number().numberBetween(0, TimeUnit.DAYS.toMillis(90))));
+                boleta.setFechaEmisionBoleta(LocalDate.now().minusDays(faker.number().numberBetween(0, 90)));
                 boleta.setTotalBoleta(faker.number().randomDouble(2, 1000, 50000)); // Total entre 1.000,00 y 50.000,00
                 boleta.setDescripcionBoleta("Boleta por compra de " + faker.commerce().productName()); // Descripción con producto
-                boleta.setIdClientePojo(faker.number().randomNumber()); // ID de cliente aleatorio
+                boleta.setIdClientePojo((long) faker.number().numberBetween(1, 50)); // ID de cliente entre 1 y 50
 
 
                 logger.info("El nombre que agregas es {}", boleta.getDescripcionBoleta());

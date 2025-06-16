@@ -33,7 +33,14 @@ public class ClienteServiceImpl implements ClienteService {
     @Transactional(readOnly = true)
     @Override
     public List<Cliente> traerTodos() {
-        return clienteRepository.findAll();
+
+        List<Cliente> clientes = clienteRepository.findAll();
+
+        if (clientes.isEmpty()) {
+            throw new ClienteException("No hay clientes registrados");
+        }
+
+        return clientes;
     }
 
     //GET id
