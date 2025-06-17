@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ClienteServiceImpl implements ClienteService {
@@ -60,6 +61,13 @@ public class ClienteServiceImpl implements ClienteService {
     //DELETE id
     @Transactional @Override
     public void eliminarCliente(Long id){
+
+        Optional<Cliente> clienteOptional = clienteRepository.findById(id);
+
+        if (clienteOptional.isEmpty()) {
+            throw new ClienteException("No se pudo eliminar: Cliente con id " + id + " no encontrado");
+        }
+
         clienteRepository.deleteById(id);
     }
 
