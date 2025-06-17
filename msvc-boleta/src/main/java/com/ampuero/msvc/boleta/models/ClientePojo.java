@@ -7,7 +7,7 @@ import lombok.*;
 @ToString
 @Data
 public class ClientePojo {
-    private Long idUsuario;
+    private Long idCliente;
     private String nombreCliente;
     private String correoCliente;
 }

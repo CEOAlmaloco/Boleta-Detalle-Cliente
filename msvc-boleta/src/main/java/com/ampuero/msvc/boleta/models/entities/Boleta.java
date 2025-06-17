@@ -8,6 +8,7 @@ import java.util.Date;
 @Entity
 @Table(name = "boletas")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Boleta {
@@ -17,6 +18,7 @@ public class Boleta {
     private Long idBoleta;
 
     private Date fechaEmisionBoleta = new Date();
+
     private double totalBoleta;
 
     @Column(nullable = false)

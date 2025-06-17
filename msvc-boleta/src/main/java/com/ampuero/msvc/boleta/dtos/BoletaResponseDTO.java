@@ -1,17 +1,43 @@
 package com.ampuero.msvc.boleta.dtos;
 
-import com.ampuero.msvc.boleta.models.ClientePojo;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
 
-import java.util.Date;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
-// En msvc-boletas
+/**
+ * DTO de respuesta que incluye todos los datos de la boleta y del cliente asociado.
+ * Se utiliza en las operaciones de consulta para proporcionar información completa.
+ */
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Respuesta completa con datos de boleta y cliente")
 public class BoletaResponseDTO {
-    private Long idBoleta;
-    private Date fechaEmisionBoleta;
-    private double totalBoleta;
+
+    @Schema(description = "ID único de la boleta", example = "1")
+    @JsonProperty("id_boleta")
+    private Long
+            idBoleta;
+
+    @Schema(description = "Fecha y hora de emisión de la boleta")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonProperty("fecha_emision")
+    private LocalDateTime fechaEmisionBoleta;
+
+    @Schema(description = "Total acumulado de la boleta", example = "1250.50")
+    @JsonProperty("total_boleta")
+    private BigDecimal totalBoleta;
+
+    @Schema(description = "Descripción de la boleta")
+    @JsonProperty("descripcion_boleta")
     private String descripcionBoleta;
-    private ClienteResponseDTO cliente;}
+
+    @Schema(description = "Información completa del cliente asociado")
+    @JsonProperty("cliente")
+    private ClienteResponseDTO cliente;
+}
