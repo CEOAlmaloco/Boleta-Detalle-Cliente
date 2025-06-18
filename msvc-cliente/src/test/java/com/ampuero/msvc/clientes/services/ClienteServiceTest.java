@@ -72,7 +72,7 @@ public class ClienteServiceTest {
     public void debeListarTodosLosClientes(){
         when(clienteRepository.findAll()).thenReturn(this.clienteList);
         List<Cliente> resultado = clienteService.traerTodos();
-        assertThat(resultado).hasSize(200);
+        assertThat(resultado).hasSize(100);
         assertThat(resultado).contains(this.clientePrueba);
 
         verify(clienteRepository, times(1)).findAll();
@@ -86,7 +86,7 @@ public class ClienteServiceTest {
         when(clienteRepository.findAll()).thenReturn(new ArrayList<>());
         assertThatThrownBy(()->clienteService.traerTodos())
                 .isInstanceOf(ClienteException.class)
-                .hasMessageContaining("No hay ningun cliente");
+                .hasMessageContaining("No hay clientes registrados");
 
         verify(clienteRepository, times(1)).findAll();
 
@@ -110,7 +110,7 @@ public class ClienteServiceTest {
         when(clienteRepository.findById(idInexistente)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> clienteService.traerPorId(idInexistente))
                 .isInstanceOf(ClienteException.class)
-                .hasMessageContaining("El cliente con id " + idInexistente + " no existe");
+                .hasMessageContaining("Cliente con id " + idInexistente + " no encontrado");
 
         verify(clienteRepository, times(1)).findById(idInexistente);
     }
@@ -158,7 +158,7 @@ public class ClienteServiceTest {
         * */
         assertThatThrownBy(() -> clienteService.actualizarCliente(idInexistente, nuevosDatos))
             .isInstanceOf(ClienteException.class)
-            .hasMessageContaining("Cliente con id 999 no existe");
+            .hasMessageContaining("Cliente con id 999 no encontrado");
 
         verify(clienteRepository, times(1)).findById(idInexistente);
         verify(clienteRepository, never()).save(any()); //Metodo save no debe ser ejecutado ni una vez
@@ -184,7 +184,7 @@ public class ClienteServiceTest {
 
         assertThatThrownBy(() -> clienteService.eliminarCliente(idInexistente))
                 .isInstanceOf(ClienteException.class)
-                .hasMessageContaining("Cliente con id 999 no existe");
+                .hasMessageContaining("Cliente con id 999 no encontrado");
 
         verify(clienteRepository, never()).deleteById(idInexistente);
     }

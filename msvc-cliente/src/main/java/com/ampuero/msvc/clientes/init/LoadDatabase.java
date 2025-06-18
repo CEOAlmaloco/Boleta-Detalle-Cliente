@@ -50,12 +50,8 @@ public class LoadDatabase implements CommandLineRunner {
                 cliente.setNombreCliente(faker.name().firstName()); // Nombre aleatorio
                 cliente.setApellidoCliente(faker.name().lastName()); // Apellido aleatorio
                 cliente.setCorreoCliente(generarMailPersonalizado());
-
                 cliente.setContraseniaCliente(faker.internet().password(8, 16, true, true, true));
-
                 cliente.setDireccionEnvioCliente(faker.address().fullAddress());
-
-
                 logger.info("El nombre que agregas es {}", cliente.getNombreCliente());
                 cliente = clienteRepository.save(cliente);
                 logger.info("EL cliente creado es: {}", cliente);
