@@ -1,5 +1,6 @@
 package com.ampuero.msvc.clientes.controllers;
 
+import com.ampuero.msvc.clientes.assemblers.ClienteModelAssembler;
 import com.ampuero.msvc.clientes.dtos.ClienteCreationDTO;
 import com.ampuero.msvc.clientes.dtos.ErrorDTO;
 import com.ampuero.msvc.clientes.models.Cliente;
@@ -14,26 +15,32 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
-
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 @RestController
-@RequestMapping("api/v1/clientes")
+@RequestMapping("api/v2/clientes")
 @Validated
 @Tag(
-        name = "Cliente API",
-        description = "Aqui se generan todos los metodos CRUD para Cliente"
+        name = "Cliente API HATEOAS",
+        description = "Aqui se generan todos los metodos CRUD para cliente"
 )
-public class ClienteController {
+public class ClienteControllerV2 {
 
     @Autowired
-    public ClienteService clienteService;
+    private ClienteService clienteService;
 
-    // POST: Crear nuevo clientes
+    @Autowired
+    private ClienteModelAssembler clienteModelAssembler;
+
     @PostMapping
     @Operation(
             summary = "Endpoint guardado de un médico",
@@ -43,7 +50,11 @@ public class ClienteController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
-                    description = "Creacion exitosa"
+                    description = "Creacion exitosa",
+                    content = @Content(
+                            mediaType = MediaTypes.HAL_JSON_VALUE,
+                            schema = @Schema(implementation = Cliente.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -65,36 +76,51 @@ public class ClienteController {
             description = "Estructura de datos que me permite ralizar la creaion de un cliente",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Cliente.class)
+                    schema = @Schema(implementation = ClienteCreationDTO.class)
             )
     )
-    public ResponseEntity<Cliente> crearCliente(@Valid @RequestBody ClienteCreationDTO clienteCreationDTO){
+    public ResponseEntity<EntityModel<Cliente>> crearCliente(@Valid @RequestBody ClienteCreationDTO clienteCreationDTO){
+        Cliente clienteNew = this.clienteService.crearCliente(clienteCreationDTO);
+        EntityModel<Cliente> entityModel = this.clienteModelAssembler.toModel(clienteNew);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(clienteService.crearCliente(clienteCreationDTO));
+                .body(entityModel);
     }
 
-    // GET: Traer todos los clientes
-    @GetMapping
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(
             summary = "Endpoint que obtiene todos los clientes",
             description = "Este endpoint devuelve un List con todos los clientes que esten registrados " +
-            "en la base de datos"
+                    "en la base de datos"
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Operacion de extraccion de clientes exitosa"
+                    description = "Operacion de extraccion de clientes exitosa",
+                    content = @Content(
+                            mediaType = MediaTypes.HAL_JSON_VALUE,
+                            schema = @Schema(implementation = Cliente.class)
+                    )
             )
     })
-    public ResponseEntity<List<Cliente>> traerTodos() {
+    public ResponseEntity<CollectionModel<EntityModel<Cliente>>> traerTodos() {
+
+        List<EntityModel<Cliente>> entityModels = this.clienteService.traerTodos()
+                .stream()
+                .map(clienteModelAssembler::toModel)
+                .toList();
+
+        CollectionModel<EntityModel<Cliente>> collectionModel = CollectionModel.of(
+                entityModels,
+                linkTo(methodOn(ClienteControllerV2.class).traerTodos()).withSelfRel()
+        );
+
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(clienteService.traerTodos());
+                .body(collectionModel);
     }
 
-    // GET: Traer clientes por ID
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(
             summary = "Endpoint que devuelve un cliente por id",
             description = "Endpoint que va a devolver un elemento de Cliente al momento de buscarlo por su numero identificador"
@@ -120,15 +146,18 @@ public class ClienteController {
                     required = true
             )
     })
-    public ResponseEntity<Cliente> traerCliente(@PathVariable Long id){
+    public ResponseEntity<EntityModel<Cliente>> traerCliente(@PathVariable Long id){
+        EntityModel<Cliente> entityModel = this.clienteModelAssembler.toModel(
+                this.clienteService.traerPorId(id)
+        );
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(clienteService.traerPorId(id));
+                .body(entityModel);
     }
 
     // PUT: Actualizar clientes por ID
 
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(
             summary = "Endpoint que actualiza un cliente por id",
             description = "Endpoint que va a actualizar los parametros de un cliente " +
@@ -136,8 +165,12 @@ public class ClienteController {
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "201",
-                    description = "Actualizacion por ID exitosa"
+                    responseCode = "200",
+                    description = "Actualizacion por ID exitosa",
+                    content = @Content(
+                            mediaType = MediaTypes.HAL_JSON_VALUE,
+                            schema = @Schema(implementation = Cliente.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -156,6 +189,13 @@ public class ClienteController {
                     )
             )
     })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Estructura de datos que me permite realizar la creación de un cliente",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ClienteCreationDTO.class)
+            )
+    )
     @Parameters(value = {
             @Parameter(
                     name = "id",
@@ -163,11 +203,16 @@ public class ClienteController {
                     required = true
             )
     })
-    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @Valid @RequestBody Cliente cliente){
+    public ResponseEntity<EntityModel<Cliente>> actualizarCliente(@PathVariable Long id, @Valid @RequestBody Cliente cliente){
+
+        Cliente clienteActualizado = this.clienteService.actualizarCliente(id, cliente);
+        EntityModel<Cliente> entityModel = this.clienteModelAssembler.toModel(clienteActualizado);
+
         return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(clienteService.actualizarCliente(id, cliente));
+                .status(HttpStatus.OK)
+                .body(entityModel);
     }
+
     // DELETE: Eliminar clientes por ID
     @DeleteMapping("/{id}")
     @Operation(
@@ -202,4 +247,5 @@ public class ClienteController {
                 .status(HttpStatus.NO_CONTENT)
                 .build();
     }
+
 }

@@ -2,6 +2,9 @@ package com.ampuero.msvc.clientes.init;
 
 import com.ampuero.msvc.clientes.repositories.ClienteRepository;
 import com.ampuero.msvc.clientes.models.Cliente;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import net.datafaker.Faker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,28 +19,37 @@ import java.util.Locale;
 @Component
 public class LoadDatabase implements CommandLineRunner {
 
+    Faker faker = new Faker(Locale.of("es","CL"));
+
     @Autowired
     private ClienteRepository clienteRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(LoadDatabase.class);
 
+    private String generarMailPersonalizado() {
+        String nombre = faker.name().username().replaceAll("[^a-zA-Z0-9]", "");
+        return nombre + "@duocuc.cl";
+    }
+
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
+    @Transactional
     public void run(String... args) throws Exception {
-        Faker faker = new Faker(Locale.of("es","CL"));
+
+        //Borrar todos los clientes existentes y reiniciar la columna id a 1
+        clienteRepository.deleteAll();
+        logger.info("Todos los clientes anteriores han sido eliminados.");
+        em.createNativeQuery("ALTER TABLE clientes ALTER COLUMN id_cliente RESTART WITH 1").executeUpdate();
 
         if(clienteRepository.count()==0){
-            for(int i=0;i<1000;i++){
+            for(int i=0;i<100;i++){
                 Cliente cliente = new Cliente();
 
                 cliente.setNombreCliente(faker.name().firstName()); // Nombre aleatorio
                 cliente.setApellidoCliente(faker.name().lastName()); // Apellido aleatorio
-
-                String correo = (cliente.getNombreCliente().toLowerCase() + "." +
-                        cliente.getApellidoCliente().toLowerCase() +
-                        faker.number().numberBetween(1, 100) + "@mail.com")
-                        .replace(" ", "").replace("'", "");
-                cliente.setCorreoCliente(correo);
+                cliente.setCorreoCliente(generarMailPersonalizado());
 
                 cliente.setContraseniaCliente(faker.internet().password(8, 16, true, true, true));
 
