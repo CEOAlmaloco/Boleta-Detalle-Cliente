@@ -36,7 +36,7 @@ public class ClienteController {
     // POST: Crear nuevo clientes
     @PostMapping
     @Operation(
-            summary = "Endpoint guardado de un médico",
+            summary = "Endpoint guardado de un cliente",
             description = "Endpoint que me permite capturar un elemento Cliente.class y lo guarda " +
                     "dentro de nuestra base de datos"
     )
@@ -65,7 +65,7 @@ public class ClienteController {
             description = "Estructura de datos que me permite ralizar la creaion de un cliente",
             content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Cliente.class)
+                    schema = @Schema(implementation = ClienteCreationDTO.class)
             )
     )
     public ResponseEntity<Cliente> crearCliente(@Valid @RequestBody ClienteCreationDTO clienteCreationDTO){
@@ -163,6 +163,13 @@ public class ClienteController {
                     required = true
             )
     })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Estructura de datos que me permite ralizar la creaion de un cliente",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ClienteCreationDTO.class)
+            )
+    )
     public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @Valid @RequestBody Cliente cliente){
         return ResponseEntity
                 .status(HttpStatus.CREATED)

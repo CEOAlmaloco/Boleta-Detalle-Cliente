@@ -43,7 +43,7 @@ public class ClienteControllerV2 {
 
     @PostMapping
     @Operation(
-            summary = "Endpoint guardado de un médico",
+            summary = "Endpoint guardado de un cliente",
             description = "Endpoint que me permite capturar un elemento Cliente.class y lo guarda " +
                     "dentro de nuestra base de datos"
     )
@@ -73,7 +73,7 @@ public class ClienteControllerV2 {
             )
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Estructura de datos que me permite ralizar la creaion de un cliente",
+            description = "Estructura de datos que me permite realizar la creacion de un cliente",
             content = @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ClienteCreationDTO.class)
@@ -83,7 +83,7 @@ public class ClienteControllerV2 {
         Cliente clienteNew = this.clienteService.crearCliente(clienteCreationDTO);
         EntityModel<Cliente> entityModel = this.clienteModelAssembler.toModel(clienteNew);
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .created(linkTo(methodOn(ClienteControllerV2.class).traerCliente(clienteNew.getIdUsuario())).toUri())
                 .body(entityModel);
     }
 
@@ -128,7 +128,11 @@ public class ClienteControllerV2 {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "Obtencion por id correcta"
+                    description = "Obtencion por id correcta",
+                    content = @Content(
+                            mediaType = MediaTypes.HAL_JSON_VALUE,
+                            schema = @Schema(implementation = Cliente.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -189,13 +193,6 @@ public class ClienteControllerV2 {
                     )
             )
     })
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Estructura de datos que me permite realizar la creación de un cliente",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ClienteCreationDTO.class)
-            )
-    )
     @Parameters(value = {
             @Parameter(
                     name = "id",
@@ -203,6 +200,13 @@ public class ClienteControllerV2 {
                     required = true
             )
     })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Estructura de datos que me permite realizar la creación de un cliente",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ClienteCreationDTO.class)
+            )
+    )
     public ResponseEntity<EntityModel<Cliente>> actualizarCliente(@PathVariable Long id, @Valid @RequestBody Cliente cliente){
 
         Cliente clienteActualizado = this.clienteService.actualizarCliente(id, cliente);

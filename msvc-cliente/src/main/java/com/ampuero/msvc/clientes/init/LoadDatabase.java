@@ -39,9 +39,9 @@ public class LoadDatabase implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         //Borrar todos los clientes existentes y reiniciar la columna id a 1
-        clienteRepository.deleteAll();
-        logger.info("Todos los clientes anteriores han sido eliminados.");
-        em.createNativeQuery("ALTER TABLE clientes ALTER COLUMN id_cliente RESTART WITH 1").executeUpdate();
+        //clienteRepository.deleteAll();
+        //logger.info("Todos los clientes anteriores han sido eliminados.");
+        //em.createNativeQuery("ALTER TABLE clientes ALTER COLUMN id_cliente RESTART WITH 1").executeUpdate();
 
         if(clienteRepository.count()==0){
             for(int i=0;i<100;i++){

@@ -10,5 +10,14 @@ public class ErrorDTO {
     private int status;
     private LocalDate localDate;
     private Map<String, String> errors;
+
+    @Override
+    public String toString(){
+        return "{" +
+                "status= "+status+
+                "date= "+ localDate +
+                "errors= "+errors+
+                "}";
+    }
 }
 
