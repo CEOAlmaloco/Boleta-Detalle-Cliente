@@ -20,8 +20,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+
+/**
+ * Controlador REST para gestionar productos dentro del sistema.
+ * Forma parte del microservicio "msvc-productos".
+ * Expone operaciones CRUD a través de endpoints HTTP.
+ */
+
 
 @RestController
 @RequestMapping("/api/v1/productos")
@@ -130,11 +136,27 @@ public class ProductoController {
     }
     // PUT: Actualizar producto por ID
     @PutMapping("/{id}")
+    @Operation(
+            summary = "Actualizar producto",
+            description = "Permite modificar los datos de un producto existente por su ID"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
     public ResponseEntity<Producto> actualizarProducto(@PathVariable Long id, @RequestBody Producto producto) {
         return ResponseEntity.status(HttpStatus.OK).body(productoService.actualizarProducto(id, producto));
     }
     // DELETE: Eliminar producto por ID
     @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Eliminar producto",
+            description = "Elimina un producto de la base de datos según su ID"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Producto eliminado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Producto no encontrado")
+    })
     public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {
        productoService.eliminarProducto(id);
         return ResponseEntity.noContent().build();

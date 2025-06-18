@@ -86,7 +86,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>com.ampuero.msvc.detalle</groupId>
+            <artifactId>msvc-detalle</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>

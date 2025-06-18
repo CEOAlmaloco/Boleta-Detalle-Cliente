@@ -1,5 +1,24 @@
 package com.ampuero.msvc.detalle.services;
 
+/**
+ * DetalleServiceImpl.java
+ *
+ * Descripción:
+ * Implementación de la interfaz DetalleService, responsable de gestionar la lógica de negocio
+ * relacionada con los detalles de boleta. Esta clase se comunica con los microservicios externos
+ * de productos y boletas a través de clientes Feign, y realiza operaciones CRUD sobre la entidad Detalle.
+ *
+ * Funciones principales:
+ * - Crear, leer, actualizar y eliminar detalles de boleta.
+ * - Verificar existencia de productos y boletas antes de operar.
+ * - Calcular subtotales y actualizar montos totales en boletas externas.
+ * - Manejar errores y excepciones en la comunicación con microservicios externos.
+ *
+ * Autor: Alex Ignacio Ampuero Ahumada
+ * Fecha de creación: [NN]
+ * Última modificación: [17-06-25]
+ */
+
 import com.ampuero.msvc.detalle.dtos.DetalleDTO;
 import com.ampuero.msvc.detalle.dtos.DetalleResponseDTO;
 import com.ampuero.msvc.detalle.exceptions.DetalleException;
@@ -27,13 +46,21 @@ import java.util.*;
 @Transactional
 public class DetalleServiceImpl implements DetalleService {
 
+    // Logger para registrar advertencias y errores
+
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DetalleServiceImpl.class);
 
+
+    // Inyecciones de dependencias
     private final DetalleRepository detalleRepository;
     private final ProductoClient productoClient;
     private final BoletaClient boletaClient;
 
-    // Crea un nuevo detalle y Lanza excepcion si la boleta o producto no existen.
+    /**
+     * Crea un nuevo detalle de boleta.
+     * Verifica existencia del producto y boleta antes de guardar el detalle.
+     * También actualiza el total de la boleta correspondiente.
+     */
     @Override
     public DetalleResponseDTO crearDetalle(DetalleDTO detalleDTO) throws ResourceNotFoundException, DetalleException {
         BoletaPojo boleta = obtenerBoletaOExcepcion(detalleDTO.getIdBoletaPojo());
@@ -52,6 +79,10 @@ public class DetalleServiceImpl implements DetalleService {
         return construirResponse(detalleGuardado, boleta, producto);
     }
 
+    /**
+     * Obtiene todos los detalles de una boleta específica.
+     * Si no se puede obtener la boleta o producto asociado, se omite ese detalle.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<DetalleResponseDTO> obtenerPorBoleta(Long idBoleta) {
@@ -65,7 +96,7 @@ public class DetalleServiceImpl implements DetalleService {
                         producto = obtenerProductoOExcepcion(detalle.getIdProductoPojo());
                         return construirResponse(detalle, boleta, producto);
                     } catch (ResourceNotFoundException | DetalleException e) {
-                        log.warn("No se pudo obtener la boleta ({}) o el producto ({}) para el detalle {}: {}. Se omitirá el detalle en la respuesta.", 
+                        log.warn("No se pudo obtener la boleta ({}) o el producto ({}) para el detalle {}: {}. Se omitirá el detalle en la respuesta.",
                                  detalle.getIdBoletaPojo(), detalle.getIdProductoPojo(), detalle.getIdDetalle(), e.getMessage());
                         return null; // Omitir este detalle si las dependencias no se pueden cargar
                     }
@@ -74,6 +105,9 @@ public class DetalleServiceImpl implements DetalleService {
                 .toList();
     }
 
+    /**
+     * Obtiene todos los detalles existentes.
+     */
     @Override
     @Transactional(readOnly = true)
     public List<DetalleResponseDTO> obtenerTodos() {
@@ -87,7 +121,7 @@ public class DetalleServiceImpl implements DetalleService {
                         producto = obtenerProductoOExcepcion(detalle.getIdProductoPojo());
                         return construirResponse(detalle, boleta, producto);
                     } catch (ResourceNotFoundException | DetalleException e) {
-                        log.warn("No se pudo obtener la boleta ({}) o el producto ({}) para el detalle {}: {}. Se omitirá el detalle en la respuesta.", 
+                        log.warn("No se pudo obtener la boleta ({}) o el producto ({}) para el detalle {}: {}. Se omitirá el detalle en la respuesta.",
                                  detalle.getIdBoletaPojo(), detalle.getIdProductoPojo(), detalle.getIdDetalle(), e.getMessage());
                         return null; //  el log warn se lo sAQue a gpt gracias profe por dejarnos usar ia sino llevaria dias con el error de que no se pudo obtener la boleta
                     }
@@ -96,7 +130,9 @@ public class DetalleServiceImpl implements DetalleService {
                 .toList();
     }
 
-    // Actualiza un detalle existente. Lanza excepcion si el detalle, la nueva boleta o el nuevo producto no existen.
+    /**
+     * Actualiza un detalle existente, recalculando los totales de boleta si es necesario.
+     */
     @Override
     public DetalleResponseDTO actualizarDetalle(Long idDetalle, DetalleDTO detalleDTO) throws ResourceNotFoundException, DetalleException {
         // Busca detalle existente o lanza DetalleException si no se encuentra
@@ -128,7 +164,9 @@ public class DetalleServiceImpl implements DetalleService {
         return construirResponse(detalleActualizado, nuevaBoleta, nuevoProducto);
     }
 
-    // Elimina un detalle. Lanza ResourceNotFoundException si el detalle no existe.
+    /**
+     * Elimina un detalle existente y actualiza el total de la boleta asociada.
+     */
     @Override
     public void eliminarDetalle(Long idDetalle) throws ResourceNotFoundException {
         // Busca detalle o lanza ResourceNotFoundException si no se encuentra
@@ -138,6 +176,8 @@ public class DetalleServiceImpl implements DetalleService {
         actualizarTotalBoleta(detalle.getIdBoletaPojo(), -detalle.getSubtotalDetalle());
         detalleRepository.delete(detalle);
     }
+    // ---------- MÉTODOS PRIVADOS DE APOYO ----------
+
 
     // Llama al clientes de boletas para actualizar el total
     private void actualizarTotalBoleta(Long idBoleta, double monto) {
