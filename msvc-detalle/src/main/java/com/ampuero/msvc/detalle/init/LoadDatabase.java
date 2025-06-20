@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
-@Profile("dev")
-@Component
+@Profile("disabled") // Deshabilitado temporalmente
+// @Component
 public class LoadDatabase implements CommandLineRunner {
 
     @Autowired
@@ -31,8 +31,8 @@ public class LoadDatabase implements CommandLineRunner {
                 Detalle detalle = new Detalle();
 
 
-                detalle.setIdBoletaPojo(faker.number().randomNumber()); // ID de boleta aleatorio
-                detalle.setIdProductoPojo(faker.number().randomNumber()); // ID de producto aleatorio
+                detalle.setIdBoletaPojo(faker.number().numberBetween(1L, 10L)); // ID de boleta entre 1-10
+                detalle.setIdProductoPojo(faker.number().numberBetween(1L, 5L)); // ID de producto entre 1-5
                 detalle.setCantidadDetalle(faker.number().numberBetween(1, 100)); // Cantidad entre 1 y 100
 
 

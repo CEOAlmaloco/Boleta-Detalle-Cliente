@@ -14,6 +14,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v2/productos")
@@ -46,10 +49,15 @@ public class ProductoControllerV2 {
                     )
             )
     })
-    public ResponseEntity<List<Producto>> traerTodos() {
+    public ResponseEntity<CollectionModel<EntityModel<Producto>>> traerTodos() {
+        List<EntityModel<Producto>> productos = productoService.traerTodo()
+                .stream()
+                .map(productoModelAssembler::toModel)
+                .collect(Collectors.toList());
+        
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(productoService.traerTodo());
+                .body(CollectionModel.of(productos));
     }
 
     // GET: Traer producto por ID
@@ -76,10 +84,11 @@ public class ProductoControllerV2 {
     @Parameters(value = {
             @Parameter(name="id", description = "Este es el id unico del producto", required = true)
     })
-    public ResponseEntity<Producto> traerPorId(@PathVariable Long id){
+    public ResponseEntity<EntityModel<Producto>> traerPorId(@PathVariable Long id){
+        Producto producto = this.productoService.traerPorId(id);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(this.productoService.traerPorId(id));
+                .body(productoModelAssembler.toModel(producto));
     }
     // POST: Crear nuevo producto
     @PostMapping
@@ -112,10 +121,11 @@ public class ProductoControllerV2 {
                     schema = @Schema(implementation = Producto.class)
             )
     )
-    public ResponseEntity<Producto> crearProducto(@RequestBody @Valid Producto producto){
+    public ResponseEntity<EntityModel<Producto>> crearProducto(@RequestBody @Valid Producto producto){
+        Producto nuevoProducto = this.productoService.crearProducto(producto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(this.productoService.crearProducto(producto));
+                .body(productoModelAssembler.toModel(nuevoProducto));
     }
     // PUT: Actualizar producto por ID
     @PutMapping("/{id}")

@@ -86,7 +86,11 @@ public class DetalleServiceImpl implements DetalleService {
     @Override
     @Transactional(readOnly = true)
     public List<DetalleResponseDTO> obtenerPorBoleta(Long idBoleta) {
-        // Obtiene detalles por ID de boleta. Omite detalles si la boleta o producto asociados no se encuentran.
+        // TEMPORAL: Para testing de HATEOAS sin microservicios externos
+        return obtenerPorBoletaSinValidacion(idBoleta);
+        
+        // ORIGINAL: (comentado temporalmente)
+        /*
         return detalleRepository.findByIdBoletaPojo(idBoleta).stream()
                 .map(detalle -> {
                     BoletaPojo boleta = null;
@@ -103,6 +107,40 @@ public class DetalleServiceImpl implements DetalleService {
                 })
                 .filter(Objects::nonNull)
                 .toList();
+        */
+    }
+
+    /**
+     * MÉTODO TEMPORAL para testing de HATEOAS sin validar microservicios externos.
+     * Crea datos fake de boleta y producto para los detalles encontrados.
+     */
+    private List<DetalleResponseDTO> obtenerPorBoletaSinValidacion(Long idBoleta) {
+        return detalleRepository.findByIdBoletaPojo(idBoleta).stream()
+                .map(detalle -> {
+                    // Crear BoletaPojo fake
+                    BoletaPojo boletaFake = new BoletaPojo();
+                    boletaFake.setIdBoleta(detalle.getIdBoletaPojo());
+                    boletaFake.setFechaEmisionBoleta(new java.util.Date());
+                    boletaFake.setTotalBoleta(detalle.getSubtotalDetalle() * 1.19); // Con IVA fake
+                    boletaFake.setDescripcionBoleta("Boleta fake para testing HATEOAS #" + detalle.getIdBoletaPojo());
+                    
+                    // Crear ClientePojo fake
+                    ClientePojo clienteFake = new ClientePojo();
+                    clienteFake.setIdUsuario(1L);
+                    clienteFake.setNombreCliente("Cliente Fake " + detalle.getIdBoletaPojo());
+                    clienteFake.setCorreoCliente("cliente" + detalle.getIdBoletaPojo() + "@fake.com");
+                    boletaFake.setCliente(clienteFake);
+                    
+                    // Crear ProductoPojo fake
+                    ProductoPojo productoFake = new ProductoPojo();
+                    productoFake.setIdProducto(detalle.getIdProductoPojo());
+                    productoFake.setNombreProducto("Producto Fake " + detalle.getIdProductoPojo());
+                    productoFake.setDescripcionProducto("Descripción fake para testing HATEOAS");
+                    productoFake.setPrecioProducto(detalle.getPrecioUnitarioDetalle());
+                    
+                    return construirResponse(detalle, boletaFake, productoFake);
+                })
+                .toList();
     }
 
     /**
@@ -111,7 +149,11 @@ public class DetalleServiceImpl implements DetalleService {
     @Override
     @Transactional(readOnly = true)
     public List<DetalleResponseDTO> obtenerTodos() {
-        // Obtiene todos los detalles. Omite detalles si la boleta o producto asociados no se encuentran.
+        // TEMPORAL: Para testing de HATEOAS sin microservicios externos
+        return obtenerTodosSinValidacion();
+        
+        // ORIGINAL: (comentado temporalmente)
+        /*
         return detalleRepository.findAll().stream()
                 .map(detalle -> {
                     BoletaPojo boleta = null;
@@ -127,6 +169,39 @@ public class DetalleServiceImpl implements DetalleService {
                     }
                 })
                 .filter(Objects::nonNull)
+                .toList();
+        */
+    }
+
+    /**
+     * MÉTODO TEMPORAL para obtener todos los detalles sin validar microservicios externos.
+     */
+    private List<DetalleResponseDTO> obtenerTodosSinValidacion() {
+        return detalleRepository.findAll().stream()
+                .map(detalle -> {
+                    // Crear BoletaPojo fake
+                    BoletaPojo boletaFake = new BoletaPojo();
+                    boletaFake.setIdBoleta(detalle.getIdBoletaPojo());
+                    boletaFake.setFechaEmisionBoleta(new java.util.Date());
+                    boletaFake.setTotalBoleta(detalle.getSubtotalDetalle() * 1.19); // Con IVA fake
+                    boletaFake.setDescripcionBoleta("Boleta fake para testing HATEOAS #" + detalle.getIdBoletaPojo());
+                    
+                    // Crear ClientePojo fake
+                    ClientePojo clienteFake = new ClientePojo();
+                    clienteFake.setIdUsuario(1L);
+                    clienteFake.setNombreCliente("Cliente Fake " + detalle.getIdBoletaPojo());
+                    clienteFake.setCorreoCliente("cliente" + detalle.getIdBoletaPojo() + "@fake.com");
+                    boletaFake.setCliente(clienteFake);
+                    
+                    // Crear ProductoPojo fake
+                    ProductoPojo productoFake = new ProductoPojo();
+                    productoFake.setIdProducto(detalle.getIdProductoPojo());
+                    productoFake.setNombreProducto("Producto Fake " + detalle.getIdProductoPojo());
+                    productoFake.setDescripcionProducto("Descripción fake para testing HATEOAS");
+                    productoFake.setPrecioProducto(detalle.getPrecioUnitarioDetalle());
+                    
+                    return construirResponse(detalle, boletaFake, productoFake);
+                })
                 .toList();
     }
 
@@ -162,6 +237,27 @@ public class DetalleServiceImpl implements DetalleService {
         }
 
         return construirResponse(detalleActualizado, nuevaBoleta, nuevoProducto);
+    }
+
+    /**
+     * Obtiene un detalle específico por su ID.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public DetalleResponseDTO obtenerPorId(Long idDetalle) throws ResourceNotFoundException {
+        // Busca detalle o lanza ResourceNotFoundException si no se encuentra
+        Detalle detalle = detalleRepository.findById(idDetalle)
+                .orElseThrow(() -> new ResourceNotFoundException("Detalle no encontrado con ID: " + idDetalle));
+        
+        try {
+            BoletaPojo boleta = obtenerBoletaOExcepcion(detalle.getIdBoletaPojo());
+            ProductoPojo producto = obtenerProductoOExcepcion(detalle.getIdProductoPojo());
+            return construirResponse(detalle, boleta, producto);
+        } catch (ResourceNotFoundException | DetalleException e) {
+            log.warn("No se pudo obtener la boleta ({}) o el producto ({}) para el detalle {}: {}",
+                     detalle.getIdBoletaPojo(), detalle.getIdProductoPojo(), detalle.getIdDetalle(), e.getMessage());
+            throw new ResourceNotFoundException("Error al obtener las dependencias del detalle con ID: " + idDetalle, e);
+        }
     }
 
     /**

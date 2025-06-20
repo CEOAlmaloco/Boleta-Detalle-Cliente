@@ -51,6 +51,16 @@ public interface DetalleService {
      */
 
     List<DetalleResponseDTO> obtenerTodos();
+    
+    /**
+     * Obtiene un detalle específico por su ID.
+     *
+     * @param idDetalle ID del detalle a consultar.
+     * @return DetalleResponseDTO con los datos completos del detalle.
+     * @throws ResourceNotFoundException si no se encuentra el detalle o sus dependencias.
+     */
+    DetalleResponseDTO obtenerPorId(Long idDetalle) throws ResourceNotFoundException;
+    
     /**
      * Actualiza los datos de un detalle existente.
      *
