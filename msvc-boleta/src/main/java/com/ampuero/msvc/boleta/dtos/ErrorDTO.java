@@ -1,13 +1,14 @@
 package com.ampuero.msvc.boleta.dtos;
 
 import lombok.Data;
-import java.util.Date;
+
+import java.time.LocalDate;
 import java.util.Map;
 
 @Data
 public class ErrorDTO {
     private int status;
-    private Date date;
+    private LocalDate localDate;
     private Map<String, String> errors;
 
     @Override
