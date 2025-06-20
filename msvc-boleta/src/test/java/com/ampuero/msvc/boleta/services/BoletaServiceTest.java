@@ -134,6 +134,55 @@ public class BoletaServiceTest {
     }
 
     @Test
+    @DisplayName("Obtener todas las boletas de un ID Cliente")
+    public void obtenerBoletasPorIdClienteCuandoExiste() {
+
+        Long clienteId = 10L;
+
+        //Se crean las boletas asociadas a ese Cliente
+        List<Boleta> boletasCliente = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            Boleta b = new Boleta();
+            b.setIdBoleta((long) i + 1);
+            b.setDescripcionBoleta("Producto Ejemplo " + i);
+            b.setIdClientePojo(clienteId);
+            b.setTotalBoleta(1000.0);
+            boletasCliente.add(b);
+        }
+        ClienteResponseDTO cliente = new ClienteResponseDTO();
+        cliente.setIdUsuario(clienteId);
+        when(clienteClientRest.findClienteById(clienteId)).thenReturn(cliente);
+        when(boletaRepository.findByIdClientePojo(clienteId)).thenReturn(boletasCliente);
+
+        List<BoletaResponseDTO> resultado = boletaService.obtenerPorCliente(clienteId);
+
+        assertThat(resultado).hasSize(3);
+        assertThat(resultado.get(0).getCliente().getIdUsuario()).isEqualTo(clienteId);
+
+        verify(clienteClientRest, times(1)).findClienteById(clienteId);
+        verify(boletaRepository, times(1)).findByIdClientePojo(clienteId);
+    }
+
+    @Test
+    @DisplayName("Lanza una excepcion cuando el ID de cliente no existe")
+    public void DebeLanzarExcepcionCuandoElIdClienteNoExisteAlObtenerBoletas() {
+
+        Long clienteIdInexistente = 999L;
+
+
+        //Se simula que el servicio cliente lanza una excepcion
+        when(clienteClientRest.findClienteById(clienteIdInexistente))
+                .thenThrow(new ResourceNotFoundException("Cliente no encontrado"));
+
+        assertThatThrownBy(() -> boletaService.obtenerPorCliente(clienteIdInexistente))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Cliente no encontrado");
+
+        verify(clienteClientRest, times(1)).findClienteById(clienteIdInexistente);
+        verify(boletaRepository, never()).findByIdClientePojo(anyLong());
+    }
+
+    @Test
     @DisplayName("Debe actualizar el total de Boleta por ID cuando existe.")
     public void debeActualizarTotalBoletaPorIdCuandoExiste() {
         Boleta boleta = new Boleta();
@@ -164,8 +213,6 @@ public class BoletaServiceTest {
     @Test
     @DisplayName("Debe eliminar Boleta por ID cuando existe")
     public void debeEliminarBoletaPorIdCuandoExiste() {
-
-
         when(boletaRepository.existsById(1L)).thenReturn(true);
 
         boletaService.eliminarBoleta(1L);
