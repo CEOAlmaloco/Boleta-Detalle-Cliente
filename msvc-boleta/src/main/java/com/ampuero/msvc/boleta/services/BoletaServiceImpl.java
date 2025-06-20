@@ -265,8 +265,8 @@ public class BoletaServiceImpl implements BoletaService {
     private BoletaResponseDTO construirResponseDTO(Boleta boleta, ClienteResponseDTO cliente) {
         return BoletaResponseDTO.builder()
                 .idBoleta(boleta.getIdBoleta())
-                .fechaEmisionBoleta(boleta.getFechaEmisionBoleta())
-                .totalBoleta(boleta.getTotalBoleta())
+                .fechaEmisionBoleta(boleta.getFechaEmisionBoleta().atStartOfDay())
+                .totalBoleta(BigDecimal.valueOf(boleta.getTotalBoleta()))
                 .descripcionBoleta(boleta.getDescripcionBoleta())
                 .cliente(cliente)
                 .build();

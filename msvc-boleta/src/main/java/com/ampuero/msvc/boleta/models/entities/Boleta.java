@@ -17,7 +17,7 @@ public class Boleta {
     @Column(name = "id_boleta") //Anotaciones para JPA
     private Long idBoleta;
 
-    private Date fechaEmisionBoleta = new Date();
+    private LocalDate fechaEmisionBoleta;
 
     private double totalBoleta;
 
