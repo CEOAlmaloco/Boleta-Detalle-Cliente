@@ -23,7 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 /**
  * Clase que representa un objeto boleta simple utilizado para la comunicación entre microservicios.
@@ -34,7 +34,7 @@ import java.util.Date;
 @Data
 public class BoletaPojo {
     private Long idBoleta;
-    private Date fechaEmisionBoleta;
+    private LocalDate fechaEmisionBoleta;
     private double totalBoleta;
     private String descripcionBoleta;
     private ClientePojo cliente;

@@ -39,6 +39,7 @@ import com.ampuero.msvc.detalle.dtos.ClienteEnBoletaDTO;
 import com.ampuero.msvc.detalle.dtos.BoletaEnDetalleDTO;
 import com.ampuero.msvc.detalle.dtos.MontoUpdateRequestDTO;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -120,7 +121,7 @@ public class DetalleServiceImpl implements DetalleService {
                     // Crear BoletaPojo fake
                     BoletaPojo boletaFake = new BoletaPojo();
                     boletaFake.setIdBoleta(detalle.getIdBoletaPojo());
-                    boletaFake.setFechaEmisionBoleta(new java.util.Date());
+                    boletaFake.setFechaEmisionBoleta(LocalDate.now());
                     boletaFake.setTotalBoleta(detalle.getSubtotalDetalle() * 1.19); // Con IVA fake
                     boletaFake.setDescripcionBoleta("Boleta fake para testing HATEOAS #" + detalle.getIdBoletaPojo());
                     
@@ -182,7 +183,7 @@ public class DetalleServiceImpl implements DetalleService {
                     // Crear BoletaPojo fake
                     BoletaPojo boletaFake = new BoletaPojo();
                     boletaFake.setIdBoleta(detalle.getIdBoletaPojo());
-                    boletaFake.setFechaEmisionBoleta(new java.util.Date());
+                    boletaFake.setFechaEmisionBoleta(LocalDate.now());
                     boletaFake.setTotalBoleta(detalle.getSubtotalDetalle() * 1.19); // Con IVA fake
                     boletaFake.setDescripcionBoleta("Boleta fake para testing HATEOAS #" + detalle.getIdBoletaPojo());
                     

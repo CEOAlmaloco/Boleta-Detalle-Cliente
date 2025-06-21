@@ -1,7 +1,6 @@
 package com.ampuero.msvc.clientes.assemblers;
 
 import com.ampuero.msvc.clientes.controllers.ClienteControllerV2;
-import com.ampuero.msvc.clientes.dtos.ClienteCreationDTO;
 import com.ampuero.msvc.clientes.models.Cliente;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Component;

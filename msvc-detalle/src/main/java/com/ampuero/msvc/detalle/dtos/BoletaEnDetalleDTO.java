@@ -28,14 +28,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class BoletaEnDetalleDTO {
     private Long idBoleta; // Anteriormente idFactura
-    private Date fechaEmisionBoleta;
+    private LocalDate fechaEmisionBoleta;
     private double totalBoleta;
     private String descripcionBoleta;
     private ClienteEnBoletaDTO cliente;

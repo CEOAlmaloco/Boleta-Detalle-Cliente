@@ -34,8 +34,6 @@ public class LoadDatabase implements CommandLineRunner {
                 detalle.setIdBoletaPojo(faker.number().numberBetween(1L, 10L)); // ID de boleta entre 1-10
                 detalle.setIdProductoPojo(faker.number().numberBetween(1L, 5L)); // ID de producto entre 1-5
                 detalle.setCantidadDetalle(faker.number().numberBetween(1, 100)); // Cantidad entre 1 y 100
-
-
                 double precioUnitario = faker.number().randomDouble(2, 1, 10000);
                 detalle.setPrecioUnitarioDetalle(precioUnitario);
 
