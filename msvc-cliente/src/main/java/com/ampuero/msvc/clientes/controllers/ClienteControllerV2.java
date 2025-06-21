@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
@@ -68,7 +69,7 @@ public class ClienteControllerV2 {
                     description = "El elemento que intentas crear ya existe",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorDTO.class)
+                            schema = @Schema(implementation = DataIntegrityViolationException.class)
                     )
             )
     })
