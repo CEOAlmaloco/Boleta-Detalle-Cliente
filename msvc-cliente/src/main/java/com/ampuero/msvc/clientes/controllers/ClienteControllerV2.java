@@ -160,8 +160,6 @@ public class ClienteControllerV2 {
                 .body(entityModel);
     }
 
-    // PUT: Actualizar clientes por ID
-
     @PutMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(
             summary = "Endpoint que actualiza un cliente por id",
@@ -218,7 +216,6 @@ public class ClienteControllerV2 {
                 .body(entityModel);
     }
 
-    // DELETE: Eliminar clientes por ID
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Endpoint que elimina un cliente por ID",

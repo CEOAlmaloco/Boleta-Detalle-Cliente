@@ -35,7 +35,6 @@ import java.util.List;
 public class BoletaController {
 
     private final BoletaService boletaService;
-    // POST: Crear nueva boleta
     @PostMapping
     @Operation(
             summary = "Endpoint guardado de una boleta",
@@ -74,7 +73,6 @@ public class BoletaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(boletaService.crearBoleta(boletaDTO));
     }
 
-    // GET: Obtener todas las boletas
     @GetMapping
     @Operation(
             summary = "Endpoint que obtiene todas las boletas",
@@ -99,7 +97,6 @@ public class BoletaController {
         return ResponseEntity.status(HttpStatus.OK).body(boletaService.obtenerTodas());
     }
 
-    // GET: Obtener boletas por ID de clientes
     @GetMapping("/clientes/{idCliente}")
     @Operation(
             summary = "Endpoint que devuelve una boleta por id del cliente",
@@ -131,7 +128,6 @@ public class BoletaController {
         return ResponseEntity.status(HttpStatus.OK).body(boletaService.obtenerPorCliente(idCliente));
     }
 
-    // PUT: Actualizar total de boleta por ID
     @PutMapping("/{idBoleta}/total")
     @Operation(
             summary = "Endpoint que actualiza el total de una boleta por id",
@@ -181,7 +177,6 @@ public class BoletaController {
         return ResponseEntity.ok().build();
     }
 
-    // GET: Obtener boleta por ID
     @GetMapping("/{id}")
     @Operation(
             summary = "Endpoint que devuelve una boleta por id",
@@ -212,7 +207,6 @@ public class BoletaController {
         return ResponseEntity.status(HttpStatus.OK).body(boletaService.obtenerBoletaPorId(id));
     }
 
-    // DELETE: Eliminar boleta por ID (usa idBoleta como path variable)
     @DeleteMapping("/{idBoleta}")
     @Operation(
             summary = "Endpoint que elimina una boleta por ID",

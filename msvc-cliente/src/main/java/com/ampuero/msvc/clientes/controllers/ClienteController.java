@@ -34,7 +34,6 @@ public class ClienteController {
     @Autowired
     public ClienteService clienteService;
 
-    // POST: Crear nuevo clientes
     @PostMapping
     @Operation(
             summary = "Endpoint guardado de un cliente",
@@ -75,7 +74,6 @@ public class ClienteController {
                 .body(clienteService.crearCliente(clienteCreationDTO));
     }
 
-    // GET: Traer todos los clientes
     @GetMapping
     @Operation(
             summary = "Endpoint que obtiene todos los clientes",
@@ -94,7 +92,6 @@ public class ClienteController {
                 .body(clienteService.traerTodos());
     }
 
-    // GET: Traer clientes por ID
     @GetMapping("/{id}")
     @Operation(
             summary = "Endpoint que devuelve un cliente por id",
@@ -126,8 +123,6 @@ public class ClienteController {
                 .status(HttpStatus.OK)
                 .body(clienteService.traerPorId(id));
     }
-
-    // PUT: Actualizar clientes por ID
 
     @PutMapping("/{id}")
     @Operation(
@@ -176,7 +171,7 @@ public class ClienteController {
                 .status(HttpStatus.CREATED)
                 .body(clienteService.actualizarCliente(id, cliente));
     }
-    // DELETE: Eliminar clientes por ID
+
     @DeleteMapping("/{id}")
     @Operation(
             summary = "Endpoint que elimina un cliente por ID",

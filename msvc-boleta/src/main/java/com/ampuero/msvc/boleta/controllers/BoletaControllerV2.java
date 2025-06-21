@@ -45,7 +45,6 @@ public class BoletaControllerV2 {
 
     private final BoletaService boletaService;
 
-    //POST: Creacion de Boleta
     @PostMapping
     @Operation(
             summary = "Endpoint guardado de una boleta",
@@ -132,7 +131,6 @@ public class BoletaControllerV2 {
                 .body(collectionModel);
     }
 
-    // GET: Obtener boletas por ID de clientes
     @GetMapping("/clientes/{idCliente}")
     @Operation(
             summary = "Endpoint que devuelve todas las boletas de un id del cliente",
@@ -179,7 +177,6 @@ public class BoletaControllerV2 {
                 .body(collectionModel);
     }
 
-    // GET: Obtener boleta por ID
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(
             summary = "Endpoint que devuelve una boleta por id",
@@ -218,7 +215,7 @@ public class BoletaControllerV2 {
                 .status(HttpStatus.OK)
                 .body(entityModel);
     }
-    // PUT: Actualizar total de boleta por ID
+
     @PutMapping("/{idBoleta}/total")
     @Operation(
             summary = "Endpoint que actualiza el total de una boleta por id",
@@ -299,7 +296,7 @@ public class BoletaControllerV2 {
         boletaService.actualizarTotalBoleta(idBoleta, montoDTO.getMonto());
         return ResponseEntity.ok().build();
     }
-    // DELETE: Eliminar boleta por ID (usa idFactura como path variable)
+
     @DeleteMapping("/{idBoleta}")
     @Operation(
             summary = "Endpoint que elimina una boleta por ID",
