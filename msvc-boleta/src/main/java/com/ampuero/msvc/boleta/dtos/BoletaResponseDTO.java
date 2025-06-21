@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -21,17 +22,15 @@ public class BoletaResponseDTO {
 
     @Schema(description = "ID único de la boleta", example = "1")
     @JsonProperty("id_boleta")
-    private Long
-            idBoleta;
+    private Long idBoleta;
 
-    @Schema(description = "Fecha y hora de emisión de la boleta")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @Schema(description = "Fecha de emisión de la boleta")
     @JsonProperty("fecha_emision")
-    private LocalDateTime fechaEmisionBoleta;
+    private LocalDate fechaEmisionBoleta;
 
     @Schema(description = "Total acumulado de la boleta", example = "1250.50")
     @JsonProperty("total_boleta")
-    private BigDecimal totalBoleta;
+    private Double totalBoleta;
 
     @Schema(description = "Descripción de la boleta")
     @JsonProperty("descripcion_boleta")

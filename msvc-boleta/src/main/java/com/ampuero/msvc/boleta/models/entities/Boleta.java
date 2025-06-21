@@ -3,6 +3,7 @@ package com.ampuero.msvc.boleta.models.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -19,7 +20,7 @@ public class Boleta {
 
     private LocalDate fechaEmisionBoleta;
 
-    private double totalBoleta;
+    private Double totalBoleta;
 
     @Column(nullable = false, name = "descripcion_boleta")
     private String descripcionBoleta;

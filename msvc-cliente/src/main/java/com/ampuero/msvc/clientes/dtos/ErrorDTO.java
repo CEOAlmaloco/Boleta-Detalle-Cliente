@@ -15,7 +15,7 @@ public class ErrorDTO {
     public String toString(){
         return "{" +
                 "status="+status+
-                ",date=" +date +
+                "date=" + localDate +
                 "errors= "+errors+
                 "}";
     }

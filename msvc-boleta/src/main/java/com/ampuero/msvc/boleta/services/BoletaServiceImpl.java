@@ -10,14 +10,12 @@ import com.ampuero.msvc.boleta.models.entities.Boleta;
 import com.ampuero.msvc.boleta.repositories.BoletaRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Implementación del servicio de gestión de boletas.
@@ -25,21 +23,17 @@ import java.util.Optional;
  * Esta clase maneja todas las operaciones CRUD relacionadas con boletas,
  * incluyendo la integración con el servicio de clientes mediante Feign Client.
  *
- * @author ampuero
+ * @author Perfulandia Team
  * @version 1.0
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class BoletaServiceImpl implements BoletaService {
+
+    private static final Logger log = LoggerFactory.getLogger(BoletaServiceImpl.class);
 
     private final BoletaRepository boletaRepository;
     private final ClienteClientRest clienteClient;
-
-    private static final BigDecimal TOTAL_INICIAL = BigDecimal.ZERO;
-    private static final String CLIENTE_NO_ENCONTRADO_MSG = "Cliente no encontrado con ID: ";
-    private static final String BOLETA_NO_ENCONTRADA_MSG = "Boleta no encontrada con ID: ";
 
     /**
      * Obtiene los datos de un cliente por su ID.
@@ -51,33 +45,18 @@ public class BoletaServiceImpl implements BoletaService {
      */
     private ClienteResponseDTO obtenerClienteOExcepcion(Long idCliente) {
         try {
-            log.debug("Consultando cliente con ID: {}", idCliente);
-
             ClienteResponseDTO cliente = clienteClient.findClienteById(idCliente);
-
-            if (Objects.isNull(cliente)) {
-                log.warn("El servicio de clientes devolvió null para ID: {}", idCliente);
-                throw new ResourceNotFoundException(
-                        CLIENTE_NO_ENCONTRADO_MSG + idCliente + " (respuesta nula del servicio)"
-                );
+            if (cliente == null) {
+                log.warn("Servicio de clientes devolvio null para ID: {}", idCliente);
+                throw new ResourceNotFoundException("Cliente no encontrado con ID: " + idCliente + " (respuesta nula del servicio)");
             }
-
-            log.debug("Cliente encontrado exitosamente: {}", cliente.getIdUsuario());
             return cliente;
-
         } catch (FeignException e) {
-            log.error("Error Feign al consultar cliente ID {}: {} - Status: {}",
-                    idCliente, e.getMessage(), e.status(), e);
-
+            log.error("Error Feign al obtener clientes ID {}: {}", idCliente, e.getMessage(), e);
             if (e.status() == 404) {
-                throw new ResourceNotFoundException(CLIENTE_NO_ENCONTRADO_MSG + idCliente, e);
+                throw new ResourceNotFoundException("Cliente no encontrado con ID: " + idCliente, e);
             }
-
-            throw new BoletaException(
-                    String.format("Error al comunicar con servicio de clientes para ID %d: %s",
-                            idCliente, e.getMessage()),
-                    e
-            );
+            throw new BoletaException("Error al comunicar con servicio de clientes para ID " + idCliente + ": " + e.getMessage(), e);
         }
     }
 
@@ -90,26 +69,18 @@ public class BoletaServiceImpl implements BoletaService {
      * @throws BoletaException si hay errores durante la creación
      */
     @Override
-    @Transactional
     public BoletaResponseDTO crearBoleta(BoletaDTO boletaDTO) {
-        log.info("Iniciando creación de boleta para cliente ID: {}", boletaDTO.getIdClientePojo());
-
-        // Validar que el cliente existe antes de crear la boleta
         ClienteResponseDTO cliente = obtenerClienteOExcepcion(boletaDTO.getIdClientePojo());
+        // ver si el cleinte es nulo
 
-        // Construir y guardar la nueva boleta
-        Boleta nuevaBoleta = Boleta.builder()
-                .descripcionBoleta(boletaDTO.getDescripcionBoleta())
-                .idClientePojo(cliente.getIdUsuario())
-                .totalBoleta(TOTAL_INICIAL.doubleValue())
-                .build();
+        Boleta boleta = new Boleta();
+        boleta.setDescripcionBoleta(boletaDTO.getDescripcionBoleta());
+        boleta.setIdClientePojo(cliente.getIdUsuario()); // Usar el ID del clientes obtenido
+        boleta.setTotalBoleta(0.0); // Total inicial en 0
 
-        Boleta boletaGuardada = boletaRepository.save(nuevaBoleta);
-
-        log.info("Boleta creada exitosamente con ID: {} para cliente: {}",
-                boletaGuardada.getIdBoleta(), cliente.getIdUsuario());
-
-        return construirResponseDTO(boletaGuardada, cliente);
+        Boleta savedBoleta = boletaRepository.save(boleta);
+        log.info("Boleta creada con ID: {}", savedBoleta.getIdBoleta());
+        return buildResponseDTO(savedBoleta, cliente);
     }
 
     /**
@@ -121,18 +92,11 @@ public class BoletaServiceImpl implements BoletaService {
      */
     @Override
     public BoletaResponseDTO obtenerBoletaPorId(Long id) {
-        log.debug("Consultando boleta con ID: {}", id);
-
         Boleta boleta = boletaRepository.findById(id)
-                .orElseThrow(() -> {
-                    log.warn("Boleta no encontrada con ID: {}", id);
-                    return new ResourceNotFoundException(BOLETA_NO_ENCONTRADA_MSG + id);
-                });
-
+                .orElseThrow(() -> new ResourceNotFoundException("Boleta no encontrada con ID: " + id));
         ClienteResponseDTO cliente = obtenerClienteOExcepcion(boleta.getIdClientePojo());
 
-        log.debug("Boleta obtenida exitosamente: {}", id);
-        return construirResponseDTO(boleta, cliente);
+        return buildResponseDTO(boleta, cliente);
     }
 
     /**
@@ -145,37 +109,19 @@ public class BoletaServiceImpl implements BoletaService {
      */
     @Override
     public List<BoletaResponseDTO> obtenerTodas() {
-        log.info("Consultando todas las boletas del sistema");
-
-        List<Boleta> todasLasBoletas = boletaRepository.findAll();
-        log.debug("Se encontraron {} boletas en la base de datos", todasLasBoletas.size());
-
-        List<BoletaResponseDTO> boletasValidas = todasLasBoletas.stream()
-                .map(this::mapearBoletaConManejorDeErrores)
-                .filter(Objects::nonNull)
-                .toList();
-
-        log.info("Se procesaron exitosamente {} boletas de {} encontradas",
-                boletasValidas.size(), todasLasBoletas.size());
-
-        return boletasValidas;
-    }
-
-    /**
-     * Mapea una boleta a DTO manejando posibles errores de cliente.
-     *
-     * @param boleta boleta a mapear
-     * @return BoletaResponseDTO o null si hay errores
-     */
-    private BoletaResponseDTO mapearBoletaConManejorDeErrores(Boleta boleta) {
-        try {
-            ClienteResponseDTO cliente = obtenerClienteOExcepcion(boleta.getIdClientePojo());
-            return construirResponseDTO(boleta, cliente);
-        } catch (ResourceNotFoundException | BoletaException e) {
-            log.warn("No se pudo procesar la boleta ID {} (cliente ID {}): {}. Se omitirá del resultado.",
-                    boleta.getIdBoleta(), boleta.getIdClientePojo(), e.getMessage());
-            return null;
-        }
+        return boletaRepository.findAll().stream()
+                .map(boleta -> {
+                    try {
+                        ClienteResponseDTO cliente = obtenerClienteOExcepcion(boleta.getIdClientePojo()); // Cambio aqui, getIdClientePojo()
+                        return buildResponseDTO(boleta, cliente);
+                    } catch (ResourceNotFoundException | BoletaException e) {
+                        log.warn("No se pudo obtener el clientes ({}) para la boleta {}: {}. Se omitira la boleta.",
+                                boleta.getIdClientePojo(), boleta.getIdBoleta(), e.getMessage());
+                        return null; // grackiasgpt por lograr encontrar el error
+                    }
+                })
+                .filter(dto -> dto != null) // Filtrar los nulos
+                .collect(Collectors.toList());
     }
 
     /**
@@ -186,25 +132,12 @@ public class BoletaServiceImpl implements BoletaService {
      * @throws ResourceNotFoundException si la boleta no existe
      */
     @Override
-    @Transactional
     public void actualizarTotalBoleta(Long idBoleta, Double monto) {
-        log.info("Actualizando total de boleta ID {} con monto: {}", idBoleta, monto);
-
         Boleta boleta = boletaRepository.findById(idBoleta)
-                .orElseThrow(() -> {
-                    log.warn("Intento de actualizar boleta inexistente con ID: {}", idBoleta);
-                    return new ResourceNotFoundException(
-                            BOLETA_NO_ENCONTRADA_MSG + idBoleta + " para actualizar total"
-                    );
-                });
-
-        Double nuevoTotal = boleta.getTotalBoleta() + monto;
-        boleta.setTotalBoleta(nuevoTotal);
-
+                .orElseThrow(() -> new ResourceNotFoundException("Boleta no encontrada con ID: " + idBoleta + " para actualizar total"));
+        boleta.setTotalBoleta(boleta.getTotalBoleta() + monto);
         boletaRepository.save(boleta);
-
-        log.info("Total de boleta ID {} actualizado exitosamente. Nuevo total: {}",
-                idBoleta, nuevoTotal);
+        log.info("Total de boleta ID {} actualizado con monto {}", idBoleta, monto);
     }
 
     /**
@@ -216,21 +149,12 @@ public class BoletaServiceImpl implements BoletaService {
      */
     @Override
     public List<BoletaResponseDTO> obtenerPorCliente(Long idCliente) {
-        log.info("Consultando boletas del cliente ID: {}", idCliente);
-
-        // Validar existencia del cliente primero
+        // Primero verificar que el clientes existe y obtener sus datos
         ClienteResponseDTO cliente = obtenerClienteOExcepcion(idCliente);
 
-        List<Boleta> boletasDelCliente = boletaRepository.findByIdClientePojo(idCliente);
-
-        List<BoletaResponseDTO> resultado = boletasDelCliente.stream()
-                .map(boleta -> construirResponseDTO(boleta, cliente))
-                .toList();
-
-        log.info("Se encontraron {} boletas para el cliente ID: {}",
-                resultado.size(), idCliente);
-
-        return resultado;
+        return boletaRepository.findByIdClientePojo(idCliente).stream()
+                .map(boleta -> buildResponseDTO(boleta, cliente)) // Reutiliza el clientes ya obtenido
+                .collect(Collectors.toList());
     }
 
     /**
@@ -240,35 +164,22 @@ public class BoletaServiceImpl implements BoletaService {
      * @throws ResourceNotFoundException si la boleta no existe
      */
     @Override
-    @Transactional
     public void eliminarBoleta(Long idBoleta) {
-        log.info("Eliminando boleta con ID: {}", idBoleta);
-
         if (!boletaRepository.existsById(idBoleta)) {
-            log.warn("Intento de eliminar boleta inexistente con ID: {}", idBoleta);
-            throw new ResourceNotFoundException(
-                    "Boleta con ID " + idBoleta + " no encontrada para eliminar"
-            );
+            throw new ResourceNotFoundException("Boleta con ID " + idBoleta + " no encontrada para eliminar");
         }
-
         boletaRepository.deleteById(idBoleta);
-        log.info("Boleta eliminada exitosamente con ID: {}", idBoleta);
+        log.info("Boleta eliminada con ID: {}", idBoleta);
     }
 
-    /**
-     * Construye un DTO de respuesta combinando datos de boleta y cliente.
-     *
-     * @param boleta entidad boleta
-     * @param cliente datos del cliente
-     * @return BoletaResponseDTO completo
-     */
-    private BoletaResponseDTO construirResponseDTO(Boleta boleta, ClienteResponseDTO cliente) {
-        return BoletaResponseDTO.builder()
-                .idBoleta(boleta.getIdBoleta())
-                .fechaEmisionBoleta(boleta.getFechaEmisionBoleta().atStartOfDay())
-                .totalBoleta(BigDecimal.valueOf(boleta.getTotalBoleta()))
-                .descripcionBoleta(boleta.getDescripcionBoleta())
-                .cliente(cliente)
-                .build();
+    // Construye el DTO de respuesta para la boleta
+    private BoletaResponseDTO buildResponseDTO(Boleta boleta, ClienteResponseDTO cliente) {
+        BoletaResponseDTO response = new BoletaResponseDTO();
+        response.setIdBoleta(boleta.getIdBoleta());
+        response.setFechaEmisionBoleta(boleta.getFechaEmisionBoleta());
+        response.setTotalBoleta(boleta.getTotalBoleta());
+        response.setDescripcionBoleta(boleta.getDescripcionBoleta());
+        response.setCliente(cliente);
+        return response;
     }
 }
