@@ -1,4 +1,7 @@
 package com.ampuero.msvc.clientes.clients;
 
-public class BoletaClientRest {
+import org.springframework.cloud.openfeign.FeignClient;
+
+@FeignClient(name = "msvc-boletas", url = "http://localhost:8081")
+public interface BoletaClientRest {
 }
