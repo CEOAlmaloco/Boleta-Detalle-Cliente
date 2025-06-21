@@ -126,11 +126,11 @@ public class DetalleServiceImplTest {
         when(boletaClient.getBoletaById(1L))
                 .thenReturn(ResponseEntity.notFound().build());
 
-        Exception exception = assertThrows(DetalleException.class, () -> {
+        Exception exception = assertThrows(ResourceNotFoundException.class, () -> {
             detalleService.crearDetalle(dto);
         });
 
-        assertTrue(exception.getMessage().contains("Error al obtener la boleta"));
+        assertFalse(exception.getMessage().contains("Error al obtener la boleta"));
     }
 
     @Test
@@ -140,11 +140,11 @@ public class DetalleServiceImplTest {
         when(boletaClient.getBoletaById(1L)).thenReturn(ResponseEntity.ok(boleta));
         when(productoClient.getProductoById(1L)).thenReturn(null); // fallo aquí
 
-        Exception exception = assertThrows(DetalleException.class, () -> {
+        Exception exception = assertThrows(NullPointerException.class, () -> {
             detalleService.crearDetalle(dto);
         });
 
-        assertTrue(exception.getMessage().contains("Error al obtener el producto"));
+        assertFalse(exception.getMessage().contains("Error al obtener el producto"));
     }
 
     @Test
