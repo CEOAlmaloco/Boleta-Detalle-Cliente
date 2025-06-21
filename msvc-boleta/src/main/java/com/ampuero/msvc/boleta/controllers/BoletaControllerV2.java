@@ -4,11 +4,13 @@ import com.ampuero.msvc.boleta.assemblers.BoletaResponseDTOModelAssembler;
 import com.ampuero.msvc.boleta.dtos.BoletaDTO;
 import com.ampuero.msvc.boleta.dtos.BoletaResponseDTO;
 import com.ampuero.msvc.boleta.dtos.ErrorDTO;
+import com.ampuero.msvc.boleta.dtos.MontoUpdateRequestDTO;
 import com.ampuero.msvc.boleta.services.BoletaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -216,9 +218,89 @@ public class BoletaControllerV2 {
                 .status(HttpStatus.OK)
                 .body(entityModel);
     }
+    // PUT: Actualizar total de boleta por ID
+    @PutMapping("/{idBoleta}/total")
+    @Operation(
+            summary = "Endpoint que actualiza el total de una boleta por id",
+            description = "Endpoint que va a actualizar el total de una boleta " +
+                    "al momento de buscarla por ID"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Actualizacion del total de Boleta Exitosa"
 
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Error cuando el monto de la boleta es negativo",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDTO.class),
+                            examples = @ExampleObject(
+                                    name = "Monto Negativo",
+                                    summary = "Monto inválido",
+                                    value = """
+                                        {
+                                            "codigo": "400",
+                                            "mensaje": "monto: El monto debe ser mayor a 0"
+                                        }
+                                        """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Error cuando la boleta con cierto ID no existe",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDTO.class)
+                    )
+            )
+
+    })
+    @Parameters(value = {
+            @Parameter(
+                    name = "idBoleta",
+                    description = "Primary Key - Entidad Boleta",
+                    required = true
+            )
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Estructura de datos que me permite actualizar el monto de una boleta",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = MontoUpdateRequestDTO.class),
+                    examples = {
+                            @ExampleObject(
+                                    name = "Monto Valido",
+                                    summary = "Monto positivo válido",
+                                    value = """
+                                        {
+                                            "monto": 1500.0
+                                        }
+                                        """
+                            ),
+                            @ExampleObject(
+                                    name = "MontoNegativo",
+                                    summary = "Monto negativo inválido",
+                                    value = """
+                                        {
+                                            "monto": -250.0
+                                        }
+                                        """
+                            )
+                    }
+            )
+    )
+    public ResponseEntity<Void> actualizarTotalBoleta(
+            @PathVariable Long idBoleta,
+            @Valid @RequestBody MontoUpdateRequestDTO montoDTO) {
+        boletaService.actualizarTotalBoleta(idBoleta, montoDTO.getMonto());
+        return ResponseEntity.ok().build();
+    }
     // DELETE: Eliminar boleta por ID (usa idFactura como path variable)
-    @DeleteMapping("/{idFactura}")
+    @DeleteMapping("/{idBoleta}")
     @Operation(
             summary = "Endpoint que elimina una boleta por ID",
             description = "Endpoint que va a eliminar una boleta al momento de " +
@@ -240,13 +322,13 @@ public class BoletaControllerV2 {
     })
     @Parameters(value = {
             @Parameter(
-                    name = "id",
+                    name = "idBoleta",
                     description = "Primary Key - Entidad Boleta",
                     required = true
             )
     })
-    public ResponseEntity<Void> eliminarBoleta(@PathVariable Long idFactura) {
-        boletaService.eliminarBoleta(idFactura);
+    public ResponseEntity<Void> eliminarBoleta(@PathVariable Long idBoleta) {
+        boletaService.eliminarBoleta(idBoleta);
         return ResponseEntity
                 .noContent()
                 .build();

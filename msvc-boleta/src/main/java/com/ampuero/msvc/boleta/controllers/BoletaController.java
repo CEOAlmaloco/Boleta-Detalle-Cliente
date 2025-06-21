@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -131,7 +132,7 @@ public class BoletaController {
     }
 
     // PUT: Actualizar total de boleta por ID
-    @PutMapping("/{id}/total")
+    @PutMapping("/{idBoleta}/total")
     @Operation(
             summary = "Endpoint que actualiza el total de una boleta por id",
             description = "Endpoint que va a actualizar el total de una boleta " +
@@ -144,16 +145,24 @@ public class BoletaController {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Error cuando el cuerpo de la solicitud no cumple con los requisitos de validación"
+                    description = "Error cuando el monto de la boleta es negativo",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDTO.class)
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Error cuando la boleta con cierto ID no existe"
+                    description = "Error cuando la boleta con cierto ID no existe",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDTO.class)
+                    )
             )
     })
     @Parameters(value = {
             @Parameter(
-                    name = "id",
+                    name = "idBoleta",
                     description = "Primary Key - Entidad Boleta",
                     required = true
             )
@@ -166,9 +175,9 @@ public class BoletaController {
             )
     )
     public ResponseEntity<Void> actualizarTotalBoleta(
-            @PathVariable Long id,
+            @PathVariable Long idBoleta,
             @Valid @RequestBody MontoUpdateRequestDTO montoDTO) {
-        boletaService.actualizarTotalBoleta(id, montoDTO.getMonto());
+        boletaService.actualizarTotalBoleta(idBoleta, montoDTO.getMonto());
         return ResponseEntity.ok().build();
     }
 
@@ -203,8 +212,8 @@ public class BoletaController {
         return ResponseEntity.status(HttpStatus.OK).body(boletaService.obtenerBoletaPorId(id));
     }
 
-    // DELETE: Eliminar boleta por ID (usa idFactura como path variable)
-    @DeleteMapping("/{idFactura}")
+    // DELETE: Eliminar boleta por ID (usa idBoleta como path variable)
+    @DeleteMapping("/{idBoleta}")
     @Operation(
             summary = "Endpoint que elimina una boleta por ID",
             description = "Endpoint que va a eliminar una boleta al momento de " +
@@ -226,13 +235,13 @@ public class BoletaController {
     })
     @Parameters(value = {
             @Parameter(
-                    name = "id",
+                    name = "idBoleta",
                     description = "Primary Key - Entidad Boleta",
                     required = true
             )
     })
-    public ResponseEntity<Void> eliminarBoleta(@PathVariable Long idFactura) {
-        boletaService.eliminarBoleta(idFactura);
+    public ResponseEntity<Void> eliminarBoleta(@PathVariable Long idBoleta) {
+        boletaService.eliminarBoleta(idBoleta);
         return ResponseEntity.noContent().build();
     }
 }
