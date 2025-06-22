@@ -40,6 +40,13 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     public Cliente crearCliente(ClienteCreationDTO clienteDetails) {
 
+        boolean existe = clienteRepository.existsByCorreoClienteAndContraseniaCliente(
+                clienteDetails.getCorreoCliente(), clienteDetails.getContraseniaCliente());
+
+        if (existe) {
+            throw new ClienteException("Ya existe un cliente con ese correo y contraseña.");
+        }
+
         Cliente clienteEntity = new Cliente();
         clienteEntity.setNombreCliente(clienteDetails.getNombreCliente());
         clienteEntity.setApellidoCliente(clienteDetails.getApellidoCliente());
