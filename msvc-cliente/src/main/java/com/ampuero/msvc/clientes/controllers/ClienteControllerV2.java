@@ -219,7 +219,7 @@ public class ClienteControllerV2 {
                 .body(entityModel);
     }
 
-    @PutMapping("/estado/{id}")
+    @PutMapping(value = "/estado/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(
             summary = "Endpoint que actualiza el estado de un cliente por id",
             description = "Endpoint que va a actualizar el parametro de estado de un cliente " +
