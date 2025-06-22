@@ -1,6 +1,7 @@
 package com.ampuero.msvc.clientes.controllers;
 
 import com.ampuero.msvc.clientes.dtos.ClienteCreationDTO;
+import com.ampuero.msvc.clientes.dtos.ClienteEstadoDTO;
 import com.ampuero.msvc.clientes.dtos.ErrorDTO;
 import com.ampuero.msvc.clientes.models.Cliente;
 import com.ampuero.msvc.clientes.services.ClienteService;
@@ -42,7 +43,7 @@ public class ClienteController {
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "201",
+                    responseCode = "200",
                     description = "Creacion exitosa"
             ),
             @ApiResponse(
@@ -57,7 +58,7 @@ public class ClienteController {
                     description = "El elemento que intentas crear ya existe",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = DataIntegrityViolationException.class)
+                            schema = @Schema(contains = DataIntegrityViolationException.class)
                     )
             )
     })
@@ -132,7 +133,7 @@ public class ClienteController {
     )
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "201",
+                    responseCode = "200",
                     description = "Actualizacion por ID exitosa"
             ),
             @ApiResponse(
@@ -160,7 +161,7 @@ public class ClienteController {
             )
     })
     @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Estructura de datos que me permite ralizar la creaion de un cliente",
+            description = "Estructura de datos que me permite actualizar un cliente",
             content = @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = ClienteCreationDTO.class)
@@ -170,6 +171,45 @@ public class ClienteController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(clienteService.actualizarCliente(id, cliente));
+    }
+
+    @PutMapping("/estado/{id}")
+    @Operation(
+            summary = "Endpoint que actualiza el estado de un cliente por id",
+            description = "Endpoint que va a actualizar el parametro de estado de un cliente " +
+                    "al momento de buscarlo por ID"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Actualizacion de Estado por id Exitosa"),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Error cuando el Cliente con cierto ID no existe",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorDTO.class)
+                    )
+            )
+    })
+    @Parameters(value = {
+            @Parameter(
+                    name = "id",
+                    description = "Primary Key - Entidad Cliente",
+                    required = true
+            )
+    })
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Estructura de datos que me permite actualizar el estado de un cliente",
+            content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = ClienteEstadoDTO.class)
+            )
+    )
+    public ResponseEntity<Cliente> actualizarEstadoCliente(@PathVariable Long id, @Valid @RequestBody ClienteEstadoDTO clienteEstadoDetails){
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(clienteService.actualizarEstadoCliente(id, clienteEstadoDetails));
     }
 
     @DeleteMapping("/{id}")
