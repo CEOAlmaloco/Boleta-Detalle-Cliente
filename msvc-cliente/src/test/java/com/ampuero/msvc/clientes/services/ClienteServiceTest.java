@@ -1,6 +1,7 @@
 package com.ampuero.msvc.clientes.services;
 
 import com.ampuero.msvc.clientes.clients.BoletaClientRest;
+import com.ampuero.msvc.clientes.dtos.ClienteCreationDTO;
 import com.ampuero.msvc.clientes.exceptions.ClienteException;
 import com.ampuero.msvc.clientes.models.Cliente;
 import com.ampuero.msvc.clientes.repositories.ClienteRepository;
@@ -21,6 +22,8 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 // Habilitamos la integracion de Mockito con JUnit 5
@@ -65,6 +68,43 @@ public class ClienteServiceTest {
             this.clienteList.add(cliente);
         }
         this.clientePrueba = this.clienteList.get(0);
+    }
+
+    @Test
+    @DisplayName("Debe crear cliente si no existe previamente con mismo correo y contraseña")
+    void debeCrearClienteCuandoNoExisteDuplicado() {
+
+        ClienteCreationDTO dto = new ClienteCreationDTO();
+        dto.setNombreCliente("Juan");
+        dto.setApellidoCliente("Pérez");
+        dto.setCorreoCliente("juan@example.com");
+        dto.setContraseniaCliente("123456");
+        dto.setDireccionEnvioCliente("Calle Falsa 123");
+
+        when(clienteRepository.existsByCorreoClienteAndContraseniaCliente(
+                dto.getCorreoCliente(), dto.getContraseniaCliente()))
+                .thenReturn(false);
+
+        Cliente clienteGuardado = new Cliente();
+        clienteGuardado.setIdUsuario(1L);
+        clienteGuardado.setNombreCliente("Juan");
+        clienteGuardado.setApellidoCliente("Pérez");
+        clienteGuardado.setCorreoCliente("juan@example.com");
+        clienteGuardado.setContraseniaCliente("123456");
+        clienteGuardado.setDireccionEnvioCliente("Calle Falsa 123");
+        clienteGuardado.setActivo(true);
+
+        when(clienteRepository.save(any(Cliente.class))).thenReturn(clienteGuardado);
+
+        Cliente resultado = clienteService.crearCliente(dto);
+
+        assertNotNull(resultado);
+        assertEquals("Juan", resultado.getNombreCliente());
+        assertEquals("Pérez", resultado.getApellidoCliente());
+        assertEquals("juan@example.com", resultado.getCorreoCliente());
+
+        verify(clienteRepository, times(1)).existsByCorreoClienteAndContraseniaCliente(anyString(), anyString());
+        verify(clienteRepository, times(1)).save(any(Cliente.class));
     }
 
     @Test
