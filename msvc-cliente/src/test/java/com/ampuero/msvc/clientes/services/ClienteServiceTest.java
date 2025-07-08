@@ -135,7 +135,7 @@ public class ClienteServiceTest {
 
     @Test
     @DisplayName("Encontrar por id un cliente")
-    public void encontrarPorIdUnCliente(){
+    public void debeEncontrarPorIdUnCliente(){
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(clientePrueba));
         Cliente resultado = clienteService.traerPorId(1L);
         assertThat(resultado).isNotNull();
@@ -207,7 +207,7 @@ public class ClienteServiceTest {
 
     @Test
     @DisplayName("Debe actualizar el estado del cliente correctamente")
-    public void debeActualizarEstadoClienteExito() {
+    public void debeActualizarEstadoCliente() {
 
         Long id = 1L;
         Cliente cliente = new Cliente();
@@ -231,7 +231,7 @@ public class ClienteServiceTest {
 
     @Test
     @DisplayName("Debe lanzar excepción si el cliente no existe al actualizar estado")
-    void LanzaExcepcionSiClienteNoExisteAlActualizarEstado() {
+    void lanzaExcepcionSiClienteNoExisteAlActualizarEstado() {
 
         Long id = 99L;
         ClienteEstadoDTO estadoDTO = new ClienteEstadoDTO(false);
