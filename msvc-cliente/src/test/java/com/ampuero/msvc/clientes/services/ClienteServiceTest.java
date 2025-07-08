@@ -2,6 +2,7 @@ package com.ampuero.msvc.clientes.services;
 
 import com.ampuero.msvc.clientes.clients.BoletaClientRest;
 import com.ampuero.msvc.clientes.dtos.ClienteCreationDTO;
+import com.ampuero.msvc.clientes.dtos.ClienteEstadoDTO;
 import com.ampuero.msvc.clientes.exceptions.ClienteException;
 import com.ampuero.msvc.clientes.models.Cliente;
 import com.ampuero.msvc.clientes.repositories.ClienteRepository;
@@ -202,6 +203,48 @@ public class ClienteServiceTest {
 
         verify(clienteRepository, times(1)).findById(idInexistente);
         verify(clienteRepository, never()).save(any()); //Metodo save no debe ser ejecutado ni una vez
+    }
+
+    @Test
+    @DisplayName("Debe actualizar el estado del cliente correctamente")
+    public void debeActualizarEstadoClienteExito() {
+
+        Long id = 1L;
+        Cliente cliente = new Cliente();
+        cliente.setIdUsuario(id);
+        cliente.setActivo(false);
+
+        ClienteEstadoDTO estadoDTO = new ClienteEstadoDTO(true); // se activa
+
+        when(clienteRepository.findById(id)).thenReturn(Optional.of(cliente));
+        when(clienteRepository.save(any(Cliente.class))).thenAnswer(inv -> inv.getArgument(0));
+
+
+        Cliente actualizado = clienteService.actualizarEstadoCliente(id, estadoDTO);
+
+
+        assertThat(actualizado).isNotNull();
+        assertThat(actualizado.getActivo()).isTrue();
+        verify(clienteRepository).findById(id);
+        verify(clienteRepository).save(cliente);
+    }
+
+    @Test
+    @DisplayName("Debe lanzar excepción si el cliente no existe al actualizar estado")
+    void LanzaExcepcionSiClienteNoExisteAlActualizarEstado() {
+
+        Long id = 99L;
+        ClienteEstadoDTO estadoDTO = new ClienteEstadoDTO(false);
+
+        when(clienteRepository.findById(id)).thenReturn(Optional.empty());
+
+
+        assertThatThrownBy(() -> clienteService.actualizarEstadoCliente(id, estadoDTO))
+                .isInstanceOf(ClienteException.class)
+                .hasMessageContaining("Cliente con id 99 no encontrado");
+
+        verify(clienteRepository).findById(id);
+        verify(clienteRepository, never()).save(any());
     }
 
     @Test
