@@ -16,7 +16,7 @@ public class BoletaResponseDTOModelAssembler implements RepresentationModelAssem
                 entity,
                 linkTo(methodOn(BoletaControllerV2.class).obtenerBoletaPorId(entity.getIdBoleta())).withSelfRel(),
                 linkTo(methodOn(BoletaControllerV2.class).obtenerTodas()).withRel("boletas"),
-                linkTo(methodOn(BoletaControllerV2.class).obtenerPorCliente(entity.getCliente().getIdUsuario())).withRel("boletas-medico")
+                linkTo(methodOn(BoletaControllerV2.class).obtenerPorCliente(entity.getCliente().getIdUsuario())).withRel("boletas-cliente")
         );
     }
 }
